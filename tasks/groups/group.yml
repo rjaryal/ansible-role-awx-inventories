@@ -1,0 +1,33 @@
+---
+
+- name: awx > inventories > groups > Create
+  shell: |
+    tower-cli group create \
+      --force-on-exists \
+      --inventory {{ awx_inventory_id }} \
+      --name "{{ awx_inventory_group.name }}" \
+      --description "{{ awx_inventory_group.description | default('') }}"
+
+- name: awx > inventories > groups > copy > Variables
+  block:
+    - name: awx > inventories > groups > copy > Tempfile
+      tempfile:
+        state: file
+        prefix: awx_
+      changed_when: false
+      register: awx_inventory_group_cmd0
+
+    - name: awx > inventories > groups > copy > Variables to tempfile
+      copy:
+        content: "{{ awx_inventory_group.extravars }}"
+        dest: "{{ awx_inventory_group_cmd0.path }}"
+        force: true
+      changed_when: false
+
+    - name: awx > inventories > groups > copy > Tempfile to inventory
+      shell: |
+        tower-cli group modify \
+          --inventory {{ awx_inventory_id }} \
+          --name "{{ awx_inventory_group.name }}" \
+          --variables "@{{ awx_inventory_group_cmd0.path }}"
+  when: (awx_inventory_group.extravars | default('')) | length > 1

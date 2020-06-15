@@ -1,0 +1,27 @@
+---
+
+# - AWX Organization -
+awx_organization_id: ~
+awx_organization_name: ~
+
+# - AWX Inventories -
+awx_inventory_enable: true
+
+#
+# awx_inventories:                               OPTIONAL, default = []
+#   - name: <inventory_name>                     REQUIRED
+#     description: <inventory_description>       OPTIONAL, default = ''
+#     copy_from: <source_inventory_name>         OPTIONAL, default = ~
+#     groups:                                    OPTIONAL, default = []
+#       - name: <group_name>                     REQUIRED
+#         parent: <parent_group_name>            OPTIONAL, default = ~
+#         description: <group_description>       OPTIONAL, default = ''
+#         extravars: <group_extra_variables>     OPTIONAL, default = ''
+#     hosts:                                     OPTIONAL, default = []
+#       - name: <host_name>                      REQUIRED
+#         description: <host_description>        OPTIONAL, default = ''
+#         extravars: <host_extra_variables>      OPTIONAL, default = ''
+#         groups: <groups_this_host_belongs_to>  OPTIONAL, default = []
+#     extravars: <inventory_extra_variables>     OPTIONAL, default = ''
+#
+awx_inventories: []

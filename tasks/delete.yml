@@ -1,0 +1,7 @@
+---
+
+- name: awx > inventories > delete > Name="{{ awx_inventory_delete.name }}"
+  shell: |
+    tower-cli inventory delete \
+      --organization {{ awx_organization_id }} \
+      --name "{{ awx_inventory_delete.name }}"

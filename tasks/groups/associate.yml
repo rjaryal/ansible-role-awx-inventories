@@ -1,0 +1,8 @@
+---
+
+- name: awx > inventories > groups > Association
+  shell: |
+    tower-cli group associate \
+      --inventory {{ awx_inventory_id }} \
+      --group "{{ awx_inventory_group.name }}" \
+      --parent "{{ awx_inventory_group.parent | default('') }}"

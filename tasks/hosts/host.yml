@@ -1,0 +1,33 @@
+---
+
+- name: awx > inventories > hosts > Create
+  shell: |
+    tower-cli host create \
+      --force-on-exists \
+      --inventory {{ awx_inventory_id }} \
+      --name "{{ awx_inventory_host.name }}" \
+      --description "{{ awx_inventory_host.description | default('') }}"
+
+- name: awx > inventories > hosts > copy > Variables
+  block:
+    - name: awx > inventories > hosts > copy > Tempfile
+      tempfile:
+        state: file
+        prefix: awx_
+      changed_when: false
+      register: awx_inventory_host_cmd0
+
+    - name: awx > inventories > hosts > copy > Variables to tempfile
+      copy:
+        content: "{{ awx_inventory_host.extravars }}"
+        dest: "{{ awx_inventory_host_cmd0.path }}"
+        force: true
+      changed_when: false
+
+    - name: awx > inventories > hosts > copy > Tempfile to inventory
+      shell: |
+        tower-cli host modify \
+          --inventory {{ awx_inventory_id }} \
+          --name "{{ awx_inventory_host.name }}" \
+          --variables "@{{ awx_inventory_host_cmd0.path }}"
+  when: (awx_inventory_host.extravars | default('')) | length > 1

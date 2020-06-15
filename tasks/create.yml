@@ -1,0 +1,102 @@
+---
+
+- name: awx > inventories > Copy
+  block:
+    - name: awx > inventories > copy > ID
+      shell: |
+        tower-cli inventory get \
+          --organization {{ awx_organization_id }} \
+          --name "{{ awx_inventory.name }}" \
+          --format id
+      changed_when: false
+      failed_when: false
+      register: awx_inventory_cmd
+
+    - name: awx > inventories > copy > Copy
+      block:
+        - name: awx > inventories > copy > from > Source
+          shell: |
+            tower-cli inventory get \
+              --organization {{ awx_organization_id }} \
+              --name "{{ awx_inventory.copy_from }}" \
+              --format id
+          register: awx_inventory_cmd0
+
+        - name: awx > inventories > copy > to > Target
+          shell: |
+            tower-cli inventory copy \
+              --new-name "{{ awx_inventory.name }}" \
+              {{ awx_inventory_cmd0.stdout }}
+      when: awx_inventory_cmd.rc != 0
+  when:
+    - awx_inventory.copy_from is defined
+    - awx_inventory.copy_from is not none
+
+- name: awx > inventories > Create
+  shell: |
+    tower-cli inventory create \
+      --force-on-exists \
+      --organization {{ awx_organization_id }} \
+      --name "{{ awx_inventory.name }}" \
+      --description "{{ awx_inventory.description | default('') }}"
+
+- name: awx > inventories > check > ID
+  shell: |
+    tower-cli inventory get \
+      --organization {{ awx_organization_id }} \
+      --name "{{ awx_inventory.name }}" \
+      --format id
+  changed_when: false
+  register: awx_inventory_cmd
+
+- name: awx > inventories > declare > ID
+  set_fact:
+    awx_inventory_id: "{{ awx_inventory_cmd.stdout }}"
+
+- name: awx > inventories > check > Variables
+  shell: |
+    tower-cli inventory get \
+      --organization {{ awx_organization_id }} \
+      --name "{{ awx_inventory.name }}" \
+      --format json \
+      | jq -r .variables \
+      | grep -v "^\s*$" \
+      | wc -l
+  changed_when: false
+  failed_when: false
+  register: awx_inventory_cmd
+
+- name: awx > inventories > declare > Variables
+  set_fact:
+    awx_inventory_vars: "{{ awx_inventory_cmd.stdout | int }}"
+
+- name: awx > inventories > copy > Variables
+  block:
+    - name: awx > inventories > copy > Tempfile
+      tempfile:
+        state: file
+        prefix: awx_
+      changed_when: false
+      register: awx_inventory_cmd0
+
+    - name: awx > inventories > copy > Variables to tempfile
+      copy:
+        content: "{{ awx_inventory.extravars }}"
+        dest: "{{ awx_inventory_cmd0.path }}"
+        force: true
+      changed_when: false
+
+    - name: awx > inventories > copy > Tempfile to inventory
+      shell: |
+        tower-cli inventory modify \
+          --name "{{ awx_inventory.name }}" \
+          --variables "@{{ awx_inventory_cmd0.path }}"
+  when:
+    - (awx_inventory_vars | int) <= 1
+    - (awx_inventory.extravars | default('')) | length > 1
+
+- name: awx > inventories > Groups
+  include_tasks: groups/main.yml
+
+- name: awx > inventories > Hosts
+  include_tasks: hosts/main.yml

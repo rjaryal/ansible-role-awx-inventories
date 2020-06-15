@@ -1,0 +1,7 @@
+---
+
+- name: awx > hosts > Association
+  include_tasks: associate_group.yml
+  with_items: "{{ awx_inventory_host.groups | default([]) }}"
+  loop_control:
+    loop_var: awx_inventory_group_name

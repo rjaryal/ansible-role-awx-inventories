@@ -1,0 +1,23 @@
+---
+
+- name: awx > inventories > hosts > Host ID
+  shell: |
+    tower-cli host get \
+      --inventory {{ awx_inventory_id }} \
+      --name "{{ awx_inventory_host.name }}" \
+      --format id
+  register: awx_inventory_host_cmd
+
+- name: awx > inventories > hosts > Group ID
+  shell: |
+    tower-cli group get \
+      --inventory {{ awx_inventory_id }} \
+      --name "{{ awx_inventory_group_name }}" \
+      --format id
+  register: awx_inventory_group_cmd
+
+- name: awx > inventories > hosts > Host Group Association
+  shell: |
+    tower-cli host associate \
+      --host {{ awx_inventory_host_cmd.stdout }} \
+      --group "{{ awx_inventory_group_cmd.stdout }}"

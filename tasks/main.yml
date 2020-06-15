@@ -1,0 +1,15 @@
+---
+
+- name: awx > inventories > Delete
+  include_tasks: delete.yml
+  with_items: "{{ awx_inventories | default([]) }}"
+  loop_control:
+    loop_var: awx_inventory_delete
+  when: not (awx_inventory_enable | default(true) | bool)
+
+- name: awx > inventories > Create
+  include_tasks: create.yml
+  with_items: "{{ awx_inventories | default([]) }}"
+  loop_control:
+    loop_var: awx_inventory
+  when: (awx_inventory_enable | default(true) | bool)

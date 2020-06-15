@@ -1,0 +1,13 @@
+---
+
+- name: awx > inventories > hosts > Create
+  include_tasks: host.yml
+  with_items: "{{ awx_inventory.hosts | default([]) }}"
+  loop_control:
+    loop_var: awx_inventory_host
+
+- name: awx > inventories > host > Associations
+  include_tasks: associate.yml
+  with_items: "{{ awx_inventory.hosts | default([]) }}"
+  loop_control:
+    loop_var: awx_inventory_host

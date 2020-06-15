@@ -1,0 +1,14 @@
+---
+
+- name: awx > inventories > groups > Create
+  include_tasks: group.yml
+  with_items: "{{ awx_inventory.groups | default([]) }}"
+  loop_control:
+    loop_var: awx_inventory_group
+
+- name: awx > inventories > groups > Associations
+  include_tasks: associate.yml
+  when: (awx_inventory_group.parent | default('')) != ''
+  with_items: "{{ awx_inventory.groups | default([]) }}"
+  loop_control:
+    loop_var: awx_inventory_group
